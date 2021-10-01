@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Usage:
+#	price <url> <Name of currency> <icon> <Price to show in>
+#	price bat "Basic Attention Token" 🦁
+# When the name of the currency is multi-word, put it in quotes.
+
+[ -z "$3" ] && exit 1
+
+# use $4 as currency, if not passed in use "usd" as default
+currency="${4:-brl}"
+interval="@14d"	# History contained in chart preceded by '@' (7d = 7 days)
+dir="${XDG_DATA_HOME:-$HOME/.local/share}/crypto-prices"
+pricefile="$dir/$1"
+chartfile="$dir/$1-chart"
+
+updateprice() { ping -q -c 1 example.org >/dev/null 2>&1 &&
+	curl -s "$currency.rate.sx/1$1" > "$pricefile" &&
+	curl -s "$currency.rate.sx/$1$interval" > "$chartfile" ;}
+
+[ -d "$dir" ] || mkdir -p "$dir"
+
+[ "$(stat -c %x "$pricefile" 2>/dev/null | cut -d' ' -f1)"  ] &&
+	updateprice "$1"
+
+printf "$%0.2f" "$(cat "$pricefile")"

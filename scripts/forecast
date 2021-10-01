@@ -1,0 +1,14 @@
+#!/bin/sh
+
+weatherreport="${XDG_DATA_HOME:-$HOME/.local/share}/weatherreport"
+getforecast() { curl -sf "wttr.in/$LOCATION" > "$weatherreport" || exit 1 ;}
+
+showweather() { printf "%s" "$(sed '16q;d' "$weatherreport" |
+	grep -wo "[0-9]*%" | sort -rn | sed "s/^//g;1q" | tr -d '\n')" 
+curl wttr.in/Your_City_Here\?format\="%20%t"
+curl wttr.in/Your_City_Here\?format\="%20%w";}
+
+[ "$(stat -c %y "$weatherreport" 2>/dev/null | cut -d' ' -f1)" = "$(date '+%Y-%m-%d')" ] ||
+	getforecast
+
+showweather
